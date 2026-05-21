@@ -1,4 +1,4 @@
-package com.liveclass.enrollment;
+package com.liveclass.courseenrollment;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

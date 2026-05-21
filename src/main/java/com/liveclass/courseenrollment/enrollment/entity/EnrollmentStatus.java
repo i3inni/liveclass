@@ -1,4 +1,4 @@
-package com.liveclass.enrollment.enrollment.entity;
+package com.liveclass.courseenrollment.enrollment.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

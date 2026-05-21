@@ -1,6 +1,6 @@
-package com.liveclass.enrollment.global.exception;
+package com.liveclass.courseenrollment.global.exception;
 
-import com.liveclass.enrollment.global.response.ApiResponse;
+import com.liveclass.courseenrollment.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

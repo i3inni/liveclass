@@ -1,4 +1,4 @@
-package com.liveclass.enrollment.global.exception;
+package com.liveclass.courseenrollment.global.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

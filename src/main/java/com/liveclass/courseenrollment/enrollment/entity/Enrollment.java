@@ -1,7 +1,7 @@
-package com.liveclass.enrollment.enrollment.entity;
+package com.liveclass.courseenrollment.enrollment.entity;
 
-import com.liveclass.enrollment.course.entity.Course;
-import com.liveclass.enrollment.user.entity.User;
+import com.liveclass.courseenrollment.course.entity.Course;
+import com.liveclass.courseenrollment.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

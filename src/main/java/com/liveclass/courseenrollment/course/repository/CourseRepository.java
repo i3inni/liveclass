@@ -1,7 +1,7 @@
-package com.liveclass.enrollment.course.repository;
+package com.liveclass.courseenrollment.course.repository;
 
-import com.liveclass.enrollment.course.entity.Course;
-import com.liveclass.enrollment.course.entity.CourseStatus;
+import com.liveclass.courseenrollment.course.entity.Course;
+import com.liveclass.courseenrollment.course.entity.CourseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

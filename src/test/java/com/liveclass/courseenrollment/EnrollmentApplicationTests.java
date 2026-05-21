@@ -1,4 +1,4 @@
-package com.liveclass.enrollment;
+package com.liveclass.courseenrollment;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

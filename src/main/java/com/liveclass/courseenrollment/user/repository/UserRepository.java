@@ -1,6 +1,6 @@
-package com.liveclass.enrollment.user.repository;
+package com.liveclass.courseenrollment.user.repository;
 
-import com.liveclass.enrollment.user.entity.User;
+import com.liveclass.courseenrollment.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

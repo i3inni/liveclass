@@ -1,6 +1,6 @@
-package com.liveclass.enrollment.global.response;
+package com.liveclass.courseenrollment.global.response;
 
-import com.liveclass.enrollment.global.exception.ErrorCode;
+import com.liveclass.courseenrollment.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
