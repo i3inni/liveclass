@@ -13,10 +13,13 @@ import com.liveclass.courseenrollment.global.exception.ErrorCode;
 import com.liveclass.courseenrollment.user.entity.User;
 import com.liveclass.courseenrollment.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -32,6 +35,9 @@ public class EnrollmentService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
 
+    @Lazy @Autowired
+    private EnrollmentService self;
+
     // 수강 신청 메서드(정원 초과 시 대기열 등록)
     @Transactional
     public EnrollmentResponse enroll(Long userId, EnrollmentCreateRequest request) {
@@ -41,37 +47,38 @@ public class EnrollmentService {
         Course course = courseRepository.findById(request.courseId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND));
 
-        // 강의 상태 확인
         if (course.getStatus() != CourseStatus.OPEN) {
             throw new BusinessException(ErrorCode.COURSE_NOT_OPEN);
         }
 
-        // 중복 신청 확인 (대기열 포함)
         if (enrollmentRepository.existsByCourseIdAndUserIdAndStatusNot(
                 course.getId(), userId, EnrollmentStatus.CANCELLED)) {
             throw new BusinessException(ErrorCode.ALREADY_ENROLLED);
         }
 
-        // 정원 초과 시 대기열 등록
         if (!course.isEnrollable()) {
-            // 대기열 중복 확인
-            if (enrollmentRepository.existsByCourseIdAndUserIdAndStatus(
-                    course.getId(), userId, EnrollmentStatus.WAITLISTED)) {
-                throw new BusinessException(ErrorCode.ALREADY_ENROLLED);
-            }
             Enrollment waitlist = Enrollment.createWaitlist(course, user);
             return EnrollmentResponse.from(enrollmentRepository.save(waitlist));
         }
 
         try {
             course.increaseEnrolledCount();
+            courseRepository.saveAndFlush(course);
             Enrollment enrollment = Enrollment.create(course, user);
             return EnrollmentResponse.from(enrollmentRepository.save(enrollment));
         } catch (ObjectOptimisticLockingFailureException e) {
-            // 동시 요청 충돌 시 대기열 등록
-            Enrollment waitlist = Enrollment.createWaitlist(course, user);
-            return EnrollmentResponse.from(enrollmentRepository.save(waitlist));
+            return self.enrollWaitlist(userId, course.getId());
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public EnrollmentResponse enrollWaitlist(Long userId, Long courseId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COURSE_NOT_FOUND));
+        Enrollment waitlist = Enrollment.createWaitlist(course, user);
+        return EnrollmentResponse.from(enrollmentRepository.save(waitlist));
     }
 
     // 결제 확정
