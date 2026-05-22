@@ -1,5 +1,7 @@
 package com.liveclass.courseenrollment.user.service;
 
+import com.liveclass.courseenrollment.course.repository.CourseRepository;
+import com.liveclass.courseenrollment.enrollment.repository.EnrollmentRepository;
 import com.liveclass.courseenrollment.global.exception.BusinessException;
 import com.liveclass.courseenrollment.user.dto.UserCreateRequest;
 import com.liveclass.courseenrollment.user.dto.UserResponse;
@@ -23,8 +25,16 @@ class UserServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
+
     @BeforeEach
     void setUp() {
+        enrollmentRepository.deleteAll();
+        courseRepository.deleteAll();
         userRepository.deleteAll();
     }
 
