@@ -106,4 +106,26 @@ public class Enrollment {
         }
         return this.confirmedAt.plusDays(7).isAfter(LocalDateTime.now());
     }
+
+    // 대기열 등록
+    public static Enrollment createWaitlist(Course course, User user) {
+        Enrollment enrollment = new Enrollment();
+        enrollment.course = course;
+        enrollment.user = user;
+        enrollment.status = EnrollmentStatus.WAITLISTED;
+        return enrollment;
+    }
+
+    // 대기열 → PENDING 전이 (자리 생겼을 때)
+    public void promote() {
+        if (this.status != EnrollmentStatus.WAITLISTED) {
+            throw new IllegalStateException("대기열 상태에서만 승격 가능합니다.");
+        }
+        this.status = EnrollmentStatus.PENDING;
+    }
+
+    // 대기열 여부 확인
+    public boolean isWaitlisted() {
+        return this.status == EnrollmentStatus.WAITLISTED;
+    }
 }

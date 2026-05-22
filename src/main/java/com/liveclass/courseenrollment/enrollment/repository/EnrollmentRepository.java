@@ -23,4 +23,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     // 수강 신청 상세 조회
     @Query("SELECT e FROM Enrollment e JOIN FETCH e.course JOIN FETCH e.user WHERE e.id = :id")
     Optional<Enrollment> findByIdWithCourseAndUser(Long id);
+
+    // 대기열 첫 번째 조회 (가장 먼저 등록한 사람)
+    Optional<Enrollment> findFirstByCourseIdAndStatusOrderByCreatedAtAsc(
+            Long courseId, EnrollmentStatus status);
+
+    // 대기열 중복 확인
+    boolean existsByCourseIdAndUserIdAndStatus(
+            Long courseId, Long userId, EnrollmentStatus status);
 }

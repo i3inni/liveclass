@@ -13,5 +13,7 @@ public enum EnrollmentStatus {
     @Schema(description = "결제 완료, 수강 확정")
     CONFIRMED,
     @Schema(description = "취소됨")
-    CANCELLED
+    CANCELLED,
+    @Schema(description = "대기열 등록")
+    WAITLISTED
 }
