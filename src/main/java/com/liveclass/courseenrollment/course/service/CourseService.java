@@ -79,7 +79,11 @@ public class CourseService {
             throw new BusinessException(ErrorCode.NOT_COURSE_OWNER);
         }
 
-        course.open();
+        try {
+            course.open();
+        } catch (IllegalStateException e) {
+            throw new BusinessException(ErrorCode.INVALID_COURSE_STATUS);
+        }
         return CourseResponse.from(course);
     }
 
@@ -94,7 +98,11 @@ public class CourseService {
             throw new BusinessException(ErrorCode.NOT_COURSE_OWNER);
         }
 
-        course.close();
+        try {
+            course.close();
+        } catch (IllegalStateException e) {
+            throw new BusinessException(ErrorCode.INVALID_COURSE_STATUS);
+        }
         return CourseResponse.from(course);
     }
 }
