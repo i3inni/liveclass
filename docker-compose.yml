@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: liveclass-db
+    environment:
+      POSTGRES_DB: liveclass
+      POSTGRES_USER: liveclass
+      POSTGRES_PASSWORD: liveclass
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: liveclass-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/liveclass
+      SPRING_DATASOURCE_USERNAME: liveclass
+      SPRING_DATASOURCE_PASSWORD: liveclass
+    depends_on:
+      - db
