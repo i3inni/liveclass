@@ -87,7 +87,11 @@ public class EnrollmentService {
             throw new BusinessException(ErrorCode.ENROLLMENT_NOT_FOUND);
         }
 
-        enrollment.confirm();
+        try {
+            enrollment.confirm();
+        } catch (IllegalStateException e) {
+            throw new BusinessException(ErrorCode.INVALID_ENROLLMENT_STATUS);
+        }
         return EnrollmentResponse.from(enrollment);
     }
 

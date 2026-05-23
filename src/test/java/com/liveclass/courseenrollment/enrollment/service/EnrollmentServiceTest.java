@@ -217,8 +217,7 @@ class EnrollmentServiceTest {
         enrollmentService.enroll(user1.getId(), new EnrollmentCreateRequest(course.getId()));
         var waitlisted = enrollmentService.enroll(user2.getId(), new EnrollmentCreateRequest(course.getId()));
 
-        // WAITLISTED 상태에서 confirm → 엔티티에서 IllegalStateException 발생 (서비스에서 미처리)
-        assertThrows(IllegalStateException.class,
+        assertThrows(BusinessException.class,
                 () -> enrollmentService.confirm(user2.getId(), waitlisted.id()));
     }
 
