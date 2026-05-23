@@ -3,6 +3,7 @@ package com.liveclass.courseenrollment.enrollment.controller;
 import com.liveclass.courseenrollment.enrollment.dto.EnrollmentCreateRequest;
 import com.liveclass.courseenrollment.enrollment.dto.EnrollmentResponse;
 import com.liveclass.courseenrollment.enrollment.service.EnrollmentService;
+import com.liveclass.courseenrollment.global.exception.OptimisticLockConflictException;
 import com.liveclass.courseenrollment.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,8 +33,14 @@ public class EnrollmentController {
     public ResponseEntity<ApiResponse<EnrollmentResponse>> enroll(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody EnrollmentCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(enrollmentService.enroll(userId, request)));
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(enrollmentService.enroll(userId, request)));
+        } catch (OptimisticLockConflictException e) {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(
+                            enrollmentService.enrollWaitlist(e.getUserId(), e.getCourseId())));
+        }
     }
 
     @Operation(summary = "결제 확정")

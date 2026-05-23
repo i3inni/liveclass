@@ -10,16 +10,14 @@ import com.liveclass.courseenrollment.enrollment.entity.EnrollmentStatus;
 import com.liveclass.courseenrollment.enrollment.repository.EnrollmentRepository;
 import com.liveclass.courseenrollment.global.exception.BusinessException;
 import com.liveclass.courseenrollment.global.exception.ErrorCode;
+import com.liveclass.courseenrollment.global.exception.OptimisticLockConflictException;
 import com.liveclass.courseenrollment.user.entity.User;
 import com.liveclass.courseenrollment.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -34,9 +32,6 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
-
-    @Lazy @Autowired
-    private EnrollmentService self;
 
     // 수강 신청 메서드(정원 초과 시 대기열 등록)
     @Transactional
@@ -67,11 +62,11 @@ public class EnrollmentService {
             Enrollment enrollment = Enrollment.create(course, user);
             return EnrollmentResponse.from(enrollmentRepository.save(enrollment));
         } catch (ObjectOptimisticLockingFailureException e) {
-            return self.enrollWaitlist(userId, course.getId());
+            throw new OptimisticLockConflictException(userId, course.getId());
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public EnrollmentResponse enrollWaitlist(Long userId, Long courseId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
