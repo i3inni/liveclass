@@ -20,7 +20,13 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "강의 엔티티")
 @Entity
-@Table(name = "courses")
+@Table(
+        name = "courses",
+        indexes = {
+                @Index(name = "idx_course_status", columnList = "status"),
+                @Index(name = "idx_course_creator_id", columnList = "creator_id")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
