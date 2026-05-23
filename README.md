@@ -66,7 +66,7 @@ http://localhost:8080/swagger-ui.html
 
 ---
 
-## 설계 원칙
+## 설계 결정과 이유
 
 ### 엔티티 설계
 
@@ -96,7 +96,7 @@ public void increaseEnrolledCount() {
 
 ---
 
-## 동시성 처리 전략
+### 동시성 처리 전략
 
 ### 낙관적 락 적용
 
@@ -128,7 +128,7 @@ private Long version;
 
 ---
 
-## 데이터베이스 최적화
+### 데이터베이스 최적화
 
 ### Unique 제약
 
@@ -197,7 +197,7 @@ OpenAPI Docs: `http://localhost:8080/api-docs`
 
 ---
 
-## API 목록
+## API 목록 및 예시
 
 ### User API
 
@@ -267,7 +267,7 @@ Header: `X-User-Id: 2`
 
 ---
 
-## 데이터 모델
+## 데이터 모델 설명
 
 ![ERD](diagram.png)
 
@@ -315,7 +315,7 @@ Header: `X-User-Id: 2`
 
 ---
 
-## 테스트
+## 테스트 실행 방법
 
 ### 테스트 실행
 
@@ -334,7 +334,7 @@ Header: `X-User-Id: 2`
 
 ---
 
-## 제약 사항
+## 미구현 / 제약사항
 
 - 실제 결제 시스템 미연동
 - 인증/인가 미구현 (`X-User-Id` 헤더로 대체)
