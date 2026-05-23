@@ -122,7 +122,9 @@ private Long version;
 
 ### 대기열 처리
 
-낙관적 락 충돌 발생 시 `self-injection (@Lazy @Autowired)` + `REQUIRES_NEW` 트랜잭션을 사용해 별도 트랜잭션에서 대기열 등록을 처리했습니다.
+낙관적 락 충돌 발생 시 `OptimisticLockConflictException`을 던지고, Controller 레이어에서 이를 catch해 별도의 `enrollWaitlist()` 트랜잭션으로 대기열 등록을 처리했습니다.
+
+이 방식으로 Service 레이어의 `self-injection (@Lazy @Autowired)` 패턴을 제거하고, 트랜잭션 경계를 명확하게 분리했습니다.
 
 ---
 
@@ -136,7 +138,14 @@ Repository 레벨 중복 검사만으로는 동시 요청 상황에서 완전한
 
 ### 인덱스 전략
 
-`enrollments` 테이블에 자주 사용되는 조회 조건에 인덱스를 추가했습니다.
+**courses 테이블**
+
+| 컬럼 | 목적 |
+| --- | --- |
+| status | 상태 필터 목록 조회 |
+| creator_id | 크리에이터별 강의 조회 |
+
+**enrollments 테이블**
 
 | 컬럼 | 목적 |
 | --- | --- |
@@ -331,21 +340,49 @@ Header: `X-User-Id: 2`
 - 인증/인가 미구현 (`X-User-Id` 헤더로 대체)
 - Redis 기반 분산 락 미적용
 - 대기열 동시성 처리 개선 여지 있음
-    - 현재 `self-injection` 방식은 기술적 한계 우회책으로, 근본적으로는 트랜잭션 경계 재설계가 필요
+    - 현재 Controller에서 예외를 catch해 재시도하는 방식으로, 트랜잭션 롤백 이후 새 트랜잭션에서 대기열 등록을 수행
+    - 근본적으로는 Redis 분산 락 등으로 교체 가능
 
 ---
 
 ## AI 활용 범위
 
-### AI가 한 것
-- 엔티티, Repository, Service, Controller 코드 초안 작성
-- 테스트 코드 초안 작성
-- README 초안 작성
+이 프로젝트는 Claude와 ChatGPT를 적극적으로 활용해서 만들었습니다.
+전반적으로 코드 작성, 문제 원인 파악, 해결책 구현은 AI가 담당했고,
+저는 방향 결정, 검토, 테스트 실행을 했습니다.
+
+### Claude — 코드 구현 전반
+
+**Claude가 생성한 것**
+- 엔티티, Repository, Service, Controller 코드 전부
+- Dockerfile, docker-compose.yml
+- README 초안 및 테스트 코드 전부
 - 커밋 메시지 추천
 
-### 직접 검토 및 수정한 것
-- 낙관적 락 충돌 시 대기열 등록이 롤백되는 문제 발견 → self-injection으로 수정
-- 엔티티가 `BusinessException`을 던지면 `HttpStatus`에 의존하게 되는 레이어 의존성 문제 발견 → `IllegalStateException`으로 수정
-- DB 최적화(인덱스/Unique 제약) 검토 및 적용 여부 판단
-- 테스트 코드 직접 실행 및 결과 검증
-- Docker 이미지 플랫폼 호환성 문제(Apple Silicon) 직접 해결
+**내가 직접 개입한 것**
+
+낙관적 락 충돌 버그는 테스트를 직접 돌려보다 실패해서 발견했고, 원인은 Claude한테 물어봐서 알았습니다.
+Claude가 해결책 3가지(self-injection, 별도 서비스 분리, 이벤트 드리븐)를 제안했는데,
+이벤트 드리븐은 코드를 봐도 이해가 안 돼서 기각했고, 별도 서비스 분리도 불필요하다고 판단해 기각했습니다.
+self-injection으로 진행하다가 나중에 Controller에서 예외를 처리하는 구조가 더 낫겠다고 방향을 잡고 구현을 맡겼습니다.
+
+엔티티가 `BusinessException`을 던지는 게 뭔가 이상하다고 느껴서 물어봤더니
+`HttpStatus`에 의존하게 되는 레이어 의존성 문제라고 설명해줘서 `IllegalStateException`으로 수정했습니다.
+
+Claude가 틀린 것도 있었습니다.
+`openjdk:17-jdk-slim` Docker 이미지를 제안했는데 실행해보니 deprecated로 빌드 실패했고,
+`Course` 엔티티에 인덱스를 README에는 써놓고 코드에는 안 넣어서 직접 확인 후 추가를 요청했습니다.
+
+---
+
+### ChatGPT — 문서 개선 및 개념 이해
+
+**README 구조 개선**
+초기 README는 기능 나열 위주였는데, ChatGPT를 활용해 문서 구조와 섹션을 정리했습니다.
+특히 설계 원칙, 동시성 처리 설명, DB 최적화 설명 부분은 여러 번 수정하면서
+"왜 이렇게 설계했는지"를 읽는 사람이 이해하기 쉽게 표현하는 데 도움을 받았습니다.
+
+**개발 중 개념 정리**
+개발하면서 헷갈리는 개념들을 ChatGPT로 정리했습니다.
+Git Rebase 동작 방식, JPA 어노테이션 의미, 인덱스 동작 원리, 낙관적 락 개념 등을
+질문하면서 이해했습니다.
